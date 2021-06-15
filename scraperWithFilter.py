@@ -4,6 +4,7 @@ import csv
 from selenium import webdriver
 # from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
+from selenium.webdriver.common.keys import Keys
 
 #url1 = 'https://www.linkedin.com/jobs/search?keywords=Software%2BDeveloper&location=Atlanta%2C%2BGeorgia%2C%2BUnited%2BStates&geoId=106224388&trk=public_jobs_jobs-search-bar_search-submit&distance=100&position=1&pageNum=0'
 #url2 = 'https://www.linkedin.com/jobs/search?keywords=Software%2BDeveloper&location=Houston%2C%2BTexas%2C%2BUnited%2BStates&geoId=103743442&trk=public_jobs_jobs-search-bar_search-submit&distance=100&position=1&pageNum=0'
@@ -66,7 +67,17 @@ dc_url_list = [dc_url1, dc_url2, dc_url3, dc_url4]
 # writer.writerow(["job_title", "location", "job_desc", "applicants","company", "level", "job_length"])
 
 
-def getJobsFromSearch(writer, driver, num_of_jobs):
+def getJobsFromSearch(writer, driver, experience_filter):
+    num_of_jobs = driver.find_element_by_css_selector('h1>span').get_attribute('innerText')
+    num_of_jobs = num_of_jobs.replace(',','')
+    num_of_jobs = num_of_jobs.replace('+','')
+    num_of_jobs = int(num_of_jobs)
+    #num_of_jobs = 20
+
+    # further filter down by experience level to make smaller batches of jobs
+    if num_of_jobs >= 1000 and not experience_filter:
+        filteredScrape(writer, driver)
+
     job_list = driver.find_element_by_class_name('jobs-search__results-list')
     jobs = []
     
@@ -139,20 +150,12 @@ def getJobsFromSearch(writer, driver, num_of_jobs):
 
 
 def filteredScrape(writer, driver):
-    base_url = driver.getCurrentUrl()
+    base_url = driver.current_url
     print(base_url)
-    experience_div = driver.find_element_by_id('facet-collapse-f_E')
-    experience_list = experience_div.find_element_by_class_name('filter-list__list')
-    experiences = experience_list.find_elements_by_tag_name('li')
-    for ex in experiences:
-        num_of_jobs = ex.find_element_by_class_name('filter-list__label-count').get_attribute('innerText')
-        num_of_jobs = num_of_jobs.replace('(', '')
-        num_of_jobs = num_of_jobs.replace(')', '')
-        num_of_jobs = num_of_jobs.replace(',', '')
-        num_of_jobs = int(num_of_jobs)
-        id = ex.find_element_by_tag_name('input').get_attribute('value')
-        driver.get(base_url + '&f_E=' + id)
-        getJobsFromSearch(writer, driver, num_of_jobs)
+    for i in range(1, 6):
+        driver.get(base_url + '&f_E=' + str(i))
+        getJobsFromSearch(writer, driver, True)
+
 
 
 def openAndGrabLinkedInJobs(writer, driver, cityAndState):
@@ -166,24 +169,15 @@ def openAndGrabLinkedInJobs(writer, driver, cityAndState):
     inputCityStateSection = driver.find_element_by_class_name("location-typeahead-input")
     inputCityStateSection.find_element_by_class_name("dismissable-input__input").clear()
     inputCityStateSection.find_element_by_class_name("dismissable-input__input").send_keys(cityAndState)
+    inputCityStateSection.find_element_by_class_name("dismissable-input__input").send_keys(Keys.RETURN)
 
-    searchButtons = driver.find_elements_by_class_name('search__button')
-    searchButtons[1].click()
+    #searchButtons = driver.find_elements_by_class_name('search__button')
+    #searchButtons[1].click()
 
     sleep(1)
     # action = ActionChains(driver)
 
-    num_of_jobs = driver.find_element_by_css_selector('h1>span').get_attribute('innerText')
-    num_of_jobs = num_of_jobs.replace(',','')
-    num_of_jobs = num_of_jobs.replace('+','')
-    num_of_jobs = int(num_of_jobs)
-    num_of_jobs = 20
-
-    # further filter down by experience level to make smaller batches of jobs
-    if num_of_jobs >= 1000:
-        filteredScrape(writer, driver)
-    else:
-        getJobsFromSearch(writer, driver, num_of_jobs)
+    getJobsFromSearch(writer, driver, False)
 
 
 chrome_path = '/usr/local/bin/chromedriver'
@@ -197,8 +191,11 @@ all_cities = []
 # linkedInlink1 = 'https://www.linkedin.com/jobs/search?keywords=Software%2BDeveloper&location='
 # linkedInlink2 = '%2C%20United%20States&geoId=102759091&trk=public_jobs_jobs-search-bar_search-submit&position=1&pageNum=0'
 
-states = ["tx", "ga", "md", "va", "dc" ]
-statesFullName = ['Texas', 'Georgia', 'Maryland', 'Virginia', 'District of Columbia']
+#states = ["tx", "ga", "md", "va", "dc" ]
+#statesFullName = ['Texas', 'Georgia', 'Maryland', 'Virginia', 'District of Columbia']
+states = ["tx", "ga"]
+statesFullName = ['Texas', 'Georgia']
+ 
 
 i = 0; 
 for state in states:
