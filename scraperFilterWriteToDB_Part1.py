@@ -175,7 +175,16 @@ def getJobsFromSearch(writer, url, experience_filter):
 
         }
 
-        job_postings_table.insert_one(job_posting_to_add)
+        try:
+            job_postings_table.insert_one(job_posting_to_add)
+        except:
+            job_postings_table.update_one({'_id': id}, {'$set': {"title": title,
+            "location": location,
+            "desc": desc,
+            "num_applicants": num_applicants,
+            "company": company,
+            "level": level,
+            "job_length": job_length}})
 
         writer.writerow([title, location, desc, num_applicants, company, level, job_length])
     driver.quit()
