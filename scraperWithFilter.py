@@ -72,17 +72,19 @@ def getJobsFromSearch(writer, driver, experience_filter):
     num_of_jobs = num_of_jobs.replace(',','')
     num_of_jobs = num_of_jobs.replace('+','')
     num_of_jobs = int(num_of_jobs)
+    print('Total: ' + str(num_of_jobs) + ' jobs')
     #num_of_jobs = 20
 
     # further filter down by experience level to make smaller batches of jobs
     if num_of_jobs >= 1000 and not experience_filter:
-        filteredScrape(writer, driver)
+        filteredScrape(writer, driver.current_url)
 
     job_list = driver.find_element_by_class_name('jobs-search__results-list')
     jobs = []
+    jobs = job_list.find_elements_by_tag_name('li')
     
     i = 1
-    while i <= int(num_of_jobs/20):
+    while i <= int(num_of_jobs/25):
         prev_len = len(jobs)
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         i += 1
@@ -113,7 +115,7 @@ def getJobsFromSearch(writer, driver, experience_filter):
         print(location)
 
         click = jobs[i].click()
-        sleep(2)
+        sleep(1)
         #desc_path = '/html/body/main/section/div[2]/section[2]/div'
         #desc_box = driver.find_element_by_xpath(desc_path)
 
@@ -149,16 +151,19 @@ def getJobsFromSearch(writer, driver, experience_filter):
     #driver.close()
 
 
-def filteredScrape(writer, driver):
-    base_url = driver.current_url
+def filteredScrape(writer, base_url):
     print(base_url)
     for i in range(1, 6):
+        driver = webdriver.Chrome(executable_path=chrome_path)
         driver.get(base_url + '&f_E=' + str(i))
         getJobsFromSearch(writer, driver, True)
+        driver.quit()
+        sleep(3)
 
 
+def openAndGrabLinkedInJobs(writer, cityAndState):
+    driver = webdriver.Chrome(executable_path=chrome_path)
 
-def openAndGrabLinkedInJobs(writer, driver, cityAndState):
     print(cityAndState)
     #navigate to linkedIN
     driver.get("https://www.linkedin.com/jobs?trk=homepage-basic_directory_jobsHomeUrl")
@@ -178,6 +183,9 @@ def openAndGrabLinkedInJobs(writer, driver, cityAndState):
     # action = ActionChains(driver)
 
     getJobsFromSearch(writer, driver, False)
+
+    driver.quit()
+    sleep(3)
 
 
 chrome_path = '/usr/local/bin/chromedriver'
@@ -227,7 +235,7 @@ for state in states:
     i+=1
 
     for location in full_locations:
-        openAndGrabLinkedInJobs(writer, driver, location)
+        openAndGrabLinkedInJobs(writer, location)
 
 
 
