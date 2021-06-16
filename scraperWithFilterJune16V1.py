@@ -67,7 +67,9 @@ dc_url_list = [dc_url1, dc_url2, dc_url3, dc_url4]
 # writer.writerow(["job_title", "location", "job_desc", "applicants","company", "level", "job_length"])
 
 
-def getJobsFromSearch(writer, driver, experience_filter):
+def getJobsFromSearch(writer, url, experience_filter):
+    driver = webdriver.Chrome(executable_path=chrome_path)
+    driver.get(url)
     num_of_jobs = driver.find_element_by_css_selector('h1>span').get_attribute('innerText')
     num_of_jobs = num_of_jobs.replace(',','')
     num_of_jobs = num_of_jobs.replace('+','')
@@ -77,7 +79,7 @@ def getJobsFromSearch(writer, driver, experience_filter):
 
     # further filter down by experience level to make smaller batches of jobs
     if num_of_jobs >= 1000 and not experience_filter:
-        filteredScrape(writer, driver.current_url)
+        filteredScrape(writer, url)
 
     job_list = driver.find_element_by_class_name('jobs-search__results-list')
     jobs = []
@@ -148,16 +150,13 @@ def getJobsFromSearch(writer, driver, experience_filter):
         print(job_length)
 
         writer.writerow([title, location, desc, num_applicants, company, level, job_length])
-    #driver.close()
+    driver.quit()
 
 
 def filteredScrape(writer, base_url):
     print(base_url)
     for i in range(1, 6):
-        driver = webdriver.Chrome(executable_path=chrome_path)
-        driver.get(base_url + '&f_E=' + str(i))
-        getJobsFromSearch(writer, driver, True)
-        driver.quit()
+        getJobsFromSearch(writer, base_url + '&f_E=' + str(i), True)
         sleep(3)
 
 
@@ -182,7 +181,7 @@ def openAndGrabLinkedInJobs(writer, cityAndState):
     sleep(1)
     # action = ActionChains(driver)
 
-    getJobsFromSearch(writer, driver, False)
+    getJobsFromSearch(writer, driver.current_url + '&distance=0', False)
 
     driver.quit()
     sleep(3)
@@ -201,8 +200,8 @@ all_cities = []
 
 #states = ["tx", "ga", "md", "va", "dc" ]
 #statesFullName = ['Texas', 'Georgia', 'Maryland', 'Virginia', 'District of Columbia']
-states = ["md", "va", "dc"]
-statesFullName = ['Maryland', 'Virginia', 'District of Columbia']
+states = ["tx", "ga"]
+statesFullName = ['Texas', 'Georgia']
  
 
 i = 0; 
