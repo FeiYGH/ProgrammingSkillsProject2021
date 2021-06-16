@@ -1,10 +1,19 @@
 import csv
-# import requests
+import requests
 # from bs4 import BeautifulSoup
 from selenium import webdriver
 # from selenium.webdriver.common.action_chains import ActionChains
 from time import sleep
 from selenium.webdriver.common.keys import Keys
+import pymongo 
+from pymongo import MongoClient
+
+
+client = pymongo.MongoClient("mongodb+srv://FYang:higherNBrighter@tpworkready.g9ab0.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+
+#If doesn’t exist, will create this DB and table when script executed
+db=client.jobskills_DB
+job_postings_table=db.linkedIN_job_postings_table
 
 
 #url1 = 'https://www.linkedin.com/jobs/search?keywords=Software%2BDeveloper&location=Atlanta%2C%2BGeorgia%2C%2BUnited%2BStates&geoId=106224388&trk=public_jobs_jobs-search-bar_search-submit&distance=100&position=1&pageNum=0'
@@ -68,9 +77,7 @@ dc_url_list = [dc_url1, dc_url2, dc_url3, dc_url4]
 # writer.writerow(["job_title", "location", "job_desc", "applicants","company", "level", "job_length"])
 
 
-def getJobsFromSearch(writer, url, experience_filter):
-    driver = webdriver.Chrome(executable_path=chrome_path)
-    driver.get(url)
+def getJobsFromSearch(writer, driver, experience_filter):
     num_of_jobs = driver.find_element_by_css_selector('h1>span').get_attribute('innerText')
     num_of_jobs = num_of_jobs.replace(',','')
     num_of_jobs = num_of_jobs.replace('+','')
@@ -80,7 +87,7 @@ def getJobsFromSearch(writer, url, experience_filter):
 
     # further filter down by experience level to make smaller batches of jobs
     if num_of_jobs >= 1000 and not experience_filter:
-        filteredScrape(writer, url)
+        filteredScrape(writer, driver.current_url)
 
     job_list = driver.find_element_by_class_name('jobs-search__results-list')
     jobs = []
@@ -150,14 +157,30 @@ def getJobsFromSearch(writer, url, experience_filter):
         print(level)
         print(job_length)
 
+        job_posting_to_add = {
+            "title": title,
+            "location": location,
+            "desc": desc,
+            "num_applicants": num_applicants,
+            "company": company,
+            "level": level,
+            "job_length": job_length
+
+        }
+
+        job_postings_table.insert_one(job_posting_to_add)
+
         writer.writerow([title, location, desc, num_applicants, company, level, job_length])
-    driver.quit()
+    #driver.close()
 
 
 def filteredScrape(writer, base_url):
     print(base_url)
     for i in range(1, 6):
-        getJobsFromSearch(writer, base_url + '&f_E=' + str(i), True)
+        driver = webdriver.Chrome(executable_path=chrome_path)
+        driver.get(base_url + '&f_E=' + str(i))
+        getJobsFromSearch(writer, driver, True)
+        driver.quit()
         sleep(3)
 
 
@@ -182,7 +205,7 @@ def openAndGrabLinkedInJobs(writer, cityAndState):
     sleep(1)
     # action = ActionChains(driver)
 
-    getJobsFromSearch(writer, driver.current_url + '&distance=0', False)
+    getJobsFromSearch(writer, driver, False)
 
     driver.quit()
     sleep(3)
@@ -201,8 +224,8 @@ all_cities = []
 
 #states = ["tx", "ga", "md", "va", "dc" ]
 #statesFullName = ['Texas', 'Georgia', 'Maryland', 'Virginia', 'District of Columbia']
-states = ["tx", "ga"]
-statesFullName = ['Texas', 'Georgia']
+states = ["md", "va", "dc"]
+statesFullName = ['Maryland', 'Virginia', 'District of Columbia']
  
 
 i = 0; 

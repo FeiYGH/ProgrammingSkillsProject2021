@@ -72,7 +72,11 @@ def getJobsFromSearch(writer, driver, experience_filter):
     num_of_jobs = num_of_jobs.replace(',','')
     num_of_jobs = num_of_jobs.replace('+','')
     num_of_jobs = int(num_of_jobs)
-    # num_of_jobs = 20
+
+    print('Total: ' + str(num_of_jobs) + ' jobs')
+    #num_of_jobs = 20
+
+ 
 
     # further filter down by experience level to make smaller batches of jobs
     if num_of_jobs >= 1000 and not experience_filter:
@@ -81,7 +85,7 @@ def getJobsFromSearch(writer, driver, experience_filter):
     job_list = driver.find_element_by_class_name('jobs-search__results-list')
     jobs = []
     jobs = job_list.find_elements_by_tag_name('li')
-    
+
     i = 1
     while i <= int(num_of_jobs/25):
         prev_len = len(jobs)
@@ -152,8 +156,10 @@ def getJobsFromSearch(writer, driver, experience_filter):
     #driver.close()
 
 
+
 def filteredScrape(writer, base_url):
     print(base_url)
+
     for i in range(1, 6):
         driver = webdriver.Chrome(executable_path=chrome_path)
         driver.get(base_url + '&f_E=' + str(i))
