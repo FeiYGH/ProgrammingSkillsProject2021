@@ -76,7 +76,9 @@ dc_url_list = [dc_url1, dc_url2, dc_url3, dc_url4]
 # writer.writerow(["job_title", "location", "job_desc", "applicants","company", "level", "job_length"])
 
 
-def getJobsFromSearch(writer, driver, experience_filter):
+def getJobsFromSearch(writer, url, experience_filter):
+    driver = webdriver.Chrome(executable_path=chrome_path)
+    driver.get(url)
     num_of_jobs = driver.find_element_by_css_selector('h1>span').get_attribute('innerText')
     num_of_jobs = num_of_jobs.replace(',','')
     num_of_jobs = num_of_jobs.replace('+','')
@@ -116,6 +118,10 @@ def getJobsFromSearch(writer, driver, experience_filter):
         #click_path = '/html/body/main/div/section[2]/ul/li[{}]/img'.format(str(i))
         #click = driver.find_element_by_xpath(click_path).click()
         #sleep(5)
+
+        id_str = jobs[i].find_element_by_class_name('base-search-card').get_attribute('data-entity-urn')
+        id_list = id_str.split(':')
+        id = id_list[len(id_list)-1]
 
         title = jobs[i].find_element_by_tag_name('h3').get_attribute('innerText')
         print(title)
@@ -157,6 +163,7 @@ def getJobsFromSearch(writer, driver, experience_filter):
         print(job_length)
 
         job_posting_to_add = {
+            "_id": id,
             "title": title,
             "location": location,
             "desc": desc,
@@ -167,10 +174,19 @@ def getJobsFromSearch(writer, driver, experience_filter):
 
         }
 
-        job_postings_table.insert_one(job_posting_to_add)
+        try:
+            job_postings_table.insert_one(job_posting_to_add)
+        except:
+            job_postings_table.update_one({'_id': id}, {'$set': {"title": title,
+            "location": location,
+            "desc": desc,
+            "num_applicants": num_applicants,
+            "company": company,
+            "level": level,
+            "job_length": job_length}})
 
         writer.writerow([title, location, desc, num_applicants, company, level, job_length])
-    #driver.close()
+    driver.quit()
 
 
 def filteredScrape(writer, base_url):
@@ -204,7 +220,7 @@ def openAndGrabLinkedInJobs(writer, cityAndState):
     sleep(1)
     # action = ActionChains(driver)
 
-    getJobsFromSearch(writer, driver, False)
+    getJobsFromSearch(writer, driver.current_url + '&distance=0', False)
 
     driver.quit()
     sleep(3)
@@ -223,8 +239,8 @@ all_cities = []
 
 #states = ["tx", "ga", "md", "va", "dc" ]
 #statesFullName = ['Texas', 'Georgia', 'Maryland', 'Virginia', 'District of Columbia']
-states = ["md", "va", "dc"]
-statesFullName = ['Maryland', 'Virginia', 'District of Columbia']
+states = ["tx", "ga"]
+statesFullName = ['Texas', 'Georgia']
  
 
 i = 0; 

@@ -85,7 +85,6 @@ def getJobsFromSearch(writer, driver, experience_filter):
     job_list = driver.find_element_by_class_name('jobs-search__results-list')
     jobs = []
     jobs = job_list.find_elements_by_tag_name('li')
-
     i = 1
     while i <= int(num_of_jobs/25):
         prev_len = len(jobs)
