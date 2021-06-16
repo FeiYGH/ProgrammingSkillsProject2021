@@ -227,7 +227,7 @@ def openAndGrabLinkedInJobs(writer, cityAndState):
 
 
 chrome_path = '/usr/local/bin/chromedriver'
-outfile = open('jobs_topten.csv','w', newline='')
+outfile = open('jobs_toptenDCArea.csv','w', newline='')
 writer = csv.writer(outfile)
 writer.writerow(["job_title", "location", "job_desc", "applicants","company", "level", "job_length"])
 biggestuscitieslink = "https://www.biggestuscities.com/"
