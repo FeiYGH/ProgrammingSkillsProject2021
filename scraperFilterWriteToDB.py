@@ -6,7 +6,6 @@ from selenium import webdriver
 from time import sleep
 from selenium.webdriver.common.keys import Keys
 import pymongo 
-from pymongo import MongoClient
 
 
 client = pymongo.MongoClient("mongodb+srv://FYang:higherNBrighter@tpworkready.g9ab0.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
