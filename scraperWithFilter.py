@@ -120,9 +120,7 @@ def getJobsFromSearch(writer, driver, experience_filter):
         print(location)
 
         click = jobs[i].click()
-
         sleep(1)
-
         #desc_path = '/html/body/main/section/div[2]/section[2]/div'
         #desc_box = driver.find_element_by_xpath(desc_path)
 
