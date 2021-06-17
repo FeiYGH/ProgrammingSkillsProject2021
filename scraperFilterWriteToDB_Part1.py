@@ -270,7 +270,7 @@ for state in states:
         cityAndState = 'District of Columbia'
         openAndGrabLinkedInJobs(writer, driver, cityAndState)
     else:
-        for k in range(2,10): 
+        for k in range(10): 
             cityName = cities[k].find_element_by_tag_name('a').get_attribute('innerHTML')
             print(cityName)
             cityAndState = cityName + ', ' + state
