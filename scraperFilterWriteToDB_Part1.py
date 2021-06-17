@@ -78,8 +78,13 @@ dc_url_list = [dc_url1, dc_url2, dc_url3, dc_url4]
 
 def getJobsFromSearch(writer, url, experience_filter):
     driver = webdriver.Chrome(executable_path=chrome_path)
-    driver.get(url)
-    num_of_jobs = driver.find_element_by_css_selector('h1>span').get_attribute('innerText')
+    driver.get(url=url)
+    num_of_jobs = ""
+    try:
+        num_of_jobs = driver.find_element_by_css_selector('h1>span').get_attribute('innerText')
+    except:
+        driver.quit()
+        return
     num_of_jobs = num_of_jobs.replace(',','')
     num_of_jobs = num_of_jobs.replace('+','')
     num_of_jobs = int(num_of_jobs)
@@ -87,7 +92,7 @@ def getJobsFromSearch(writer, url, experience_filter):
     #num_of_jobs = 20
 
     # further filter down by experience level to make smaller batches of jobs
-    if num_of_jobs >= 1000 and not experience_filter:
+    if num_of_jobs >= 1000 and experience_filter:
         filteredScrape(writer, driver.current_url)
 
     job_list = driver.find_element_by_class_name('jobs-search__results-list')
