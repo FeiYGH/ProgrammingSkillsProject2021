@@ -78,7 +78,7 @@ dc_url_list = [dc_url1, dc_url2, dc_url3, dc_url4]
 
 def getJobsFromSearch(writer, url, experience_filter):
     driver = webdriver.Chrome(executable_path=chrome_path)
-    driver.get(url)
+    driver.get(url=url)
     num_of_jobs = driver.find_element_by_css_selector('h1>span').get_attribute('innerText')
     num_of_jobs = num_of_jobs.replace(',','')
     num_of_jobs = num_of_jobs.replace('+','')
@@ -87,7 +87,7 @@ def getJobsFromSearch(writer, url, experience_filter):
     #num_of_jobs = 20
 
     # further filter down by experience level to make smaller batches of jobs
-    if num_of_jobs >= 1000 and not experience_filter:
+    if num_of_jobs >= 1000 and experience_filter:
         filteredScrape(writer, driver.current_url)
 
     job_list = driver.find_element_by_class_name('jobs-search__results-list')
@@ -265,7 +265,7 @@ for state in states:
         cityAndState = 'District of Columbia'
         openAndGrabLinkedInJobs(writer, driver, cityAndState)
     else:
-        for k in range(10): 
+        for k in range(2,10): 
             cityName = cities[k].find_element_by_tag_name('a').get_attribute('innerHTML')
             print(cityName)
             cityAndState = cityName + ', ' + state
