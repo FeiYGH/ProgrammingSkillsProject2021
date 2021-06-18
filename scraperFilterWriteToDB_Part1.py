@@ -141,21 +141,26 @@ def getJobsFromSearch(writer, url, experience_filter):
 
             for j in range(3):
                 try:
-                    desc = driver.find_element_by_class_name('show-more-less-html__markup').get_attribute('innerHTML')
+                    desc = driver.find_element_by_class_name('show-more-less-html__markup').get_attribute('innerHTML').strip()
                     break
                 except:
                     sleep(1)
             print(desc)
 
-            num_applicants = driver.find_element_by_class_name('num-applicants__caption').get_attribute('innerHTML')
+            for j in range(3):
+                try:
+                    num_applicants = driver.find_element_by_class_name('num-applicants__caption').get_attribute('innerHTML').strip()
+                    break
+                except:
+                    sleep(1)
             print(num_applicants)
 
             company = ""
             try:
-                company = jobs[i].find_element_by_tag_name('h4').find_element_by_tag_name('a').get_attribute('innerHTML')
+                company = jobs[i].find_element_by_tag_name('h4').find_element_by_tag_name('a').get_attribute('innerHTML').strip()
             except:
                 pass
-                company = jobs[i].find_element_by_css_selector('h4>div').get_attribute('innerHTML')
+                company = jobs[i].find_element_by_css_selector('h4>div').get_attribute('innerHTML').strip()
             print(company)
 
             sleep(1)
@@ -178,9 +183,11 @@ def getJobsFromSearch(writer, url, experience_filter):
                         try:
                             #print(criteria.find_element_by_class_name('description__job-criteria-subheader').get_attribute('innerHTML'))
                             if 'Seniority level' in criteria.find_element_by_class_name('description__job-criteria-subheader').get_attribute('innerHTML'):
-                                level = criteria.find_element_by_class_name('description__job-criteria-text').get_attribute('innerHTML')
+                                level = criteria.find_element_by_class_name('description__job-criteria-text').get_attribute('innerHTML').strip()
+                                break
                             if 'Employment type' in criteria.find_element_by_class_name('description__job-criteria-subheader').get_attribute('innerHTML'):
-                                job_length = criteria.find_element_by_class_name('description__job-criteria-text').get_attribute('innerHTML')
+                                job_length = criteria.find_element_by_class_name('description__job-criteria-text').get_attribute('innerHTML').strip()
+                                break
                         except:
                             pass
             print(level)
