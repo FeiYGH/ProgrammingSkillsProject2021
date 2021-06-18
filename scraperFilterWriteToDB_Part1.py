@@ -92,115 +92,132 @@ def getJobsFromSearch(writer, url, experience_filter):
     #num_of_jobs = 20
 
     # further filter down by experience level to make smaller batches of jobs
-    if num_of_jobs >= 1000 and experience_filter:
+    if num_of_jobs >= 1000 and not experience_filter:
         filteredScrape(writer, driver.current_url)
-
-    job_list = driver.find_element_by_class_name('jobs-search__results-list')
-    jobs = []
-    jobs = job_list.find_elements_by_tag_name('li')
-    
-    i = 1
-    while i <= int(num_of_jobs/25):
-        prev_len = len(jobs)
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        i += 1
-        try:
-            driver.find_element_by_class_name('infinite-scroller__show-more-button').click()
-            sleep(2)
-        except:
-            print("NO BUTTON")
-            pass
-            sleep(2)
+    else:
+        job_list = driver.find_element_by_class_name('jobs-search__results-list')
+        jobs = []
         jobs = job_list.find_elements_by_tag_name('li')
-        print(str(len(jobs)))
-        if len(jobs) == prev_len:
-            break
+        
+        count = 1
+        while count <= int(num_of_jobs/25):
+            prev_len = len(jobs)
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            count += 1
+            try:
+                driver.find_element_by_class_name('infinite-scroller__show-more-button').click()
+                sleep(2)
+            except:
+                print("NO BUTTON")
+                pass
+                sleep(2)
+            jobs = job_list.find_elements_by_tag_name('li')
+            print(str(len(jobs)))
+            if len(jobs) == prev_len:
+                break
 
-    #job_list = driver.find_element_by_class_name('jobs-search__results-list')
-    #jobs = job_list.find_elements_by_tag_name('li')
+        #job_list = driver.find_element_by_class_name('jobs-search__results-list')
+        #jobs = job_list.find_elements_by_tag_name('li')
 
-    for i in range(len(jobs)):
-        #click_path = '/html/body/main/div/section[2]/ul/li[{}]/img'.format(str(i))
-        #click = driver.find_element_by_xpath(click_path).click()
-        #sleep(5)
+        for i in range(len(jobs)):
+            #click_path = '/html/body/main/div/section[2]/ul/li[{}]/img'.format(str(i))
+            #click = driver.find_element_by_xpath(click_path).click()
+            #sleep(5)
 
-        id_str = jobs[i].find_element_by_class_name('base-search-card').get_attribute('data-entity-urn')
-        id_list = id_str.split(':')
-        id = id_list[len(id_list)-1]
+            id_str = jobs[i].find_element_by_class_name('base-search-card').get_attribute('data-entity-urn')
+            id_list = id_str.split(':')
+            id = id_list[len(id_list)-1]
 
-        title = jobs[i].find_element_by_tag_name('h3').get_attribute('innerText')
-        print(title)
+            title = jobs[i].find_element_by_tag_name('h3').get_attribute('innerText')
+            print(title)
 
-        location = jobs[i].find_element_by_class_name('job-search-card__location').get_attribute('innerText')
-        print(location)
+            location = jobs[i].find_element_by_class_name('job-search-card__location').get_attribute('innerText')
+            print(location)
 
-        click = jobs[i].click()
-        sleep(1)
-        #desc_path = '/html/body/main/section/div[2]/section[2]/div'
-        #desc_box = driver.find_element_by_xpath(desc_path)
+            click = jobs[i].click()
+            sleep(1)
+            #desc_path = '/html/body/main/section/div[2]/section[2]/div'
+            #desc_box = driver.find_element_by_xpath(desc_path)
 
-        desc = driver.find_element_by_class_name('show-more-less-html__markup').get_attribute('innerHTML')
-        print(desc)
+            for j in range(3):
+                try:
+                    desc = driver.find_element_by_class_name('show-more-less-html__markup').get_attribute('innerHTML')
+                    break
+                except:
+                    sleep(1)
+            print(desc)
 
-        num_applicants = driver.find_element_by_class_name('num-applicants__caption').get_attribute('innerHTML')
-        print(num_applicants)
+            num_applicants = driver.find_element_by_class_name('num-applicants__caption').get_attribute('innerHTML')
+            print(num_applicants)
 
-        company = ""
-        try:
-            company = jobs[i].find_element_by_tag_name('h4').find_element_by_tag_name('a').get_attribute('innerHTML')
-        except:
-            pass
-            company = jobs[i].find_element_by_css_selector('h4>div').get_attribute('innerHTML')
-        print(company)
+            company = ""
+            try:
+                company = jobs[i].find_element_by_tag_name('h4').find_element_by_tag_name('a').get_attribute('innerHTML')
+            except:
+                pass
+                company = jobs[i].find_element_by_css_selector('h4>div').get_attribute('innerHTML')
+            print(company)
 
-        criteria_list = driver.find_element_by_class_name('description__job-criteria-list')
-        criterias = criteria_list.find_elements_by_tag_name('li')
-        level = 'N/A'
-        job_length = 'N/A'
-        #print(criterias)
-        for criteria in criterias:
-            print(criteria.find_element_by_class_name('description__job-criteria-subheader').get_attribute('innerHTML'))
-            if 'Seniority level' in criteria.find_element_by_class_name('description__job-criteria-subheader').get_attribute('innerHTML'):
-                level = criteria.find_element_by_class_name('description__job-criteria-text').get_attribute('innerHTML')
-            if 'Employment type' in criteria.find_element_by_class_name('description__job-criteria-subheader').get_attribute('innerHTML'):
-                job_length = criteria.find_element_by_class_name('description__job-criteria-text').get_attribute('innerHTML')
-        print(level)
-        print(job_length)
+            sleep(1)
+            check_count = 0
+            for j in range(3):
+                try: 
+                    criteria_list = driver.find_element_by_class_name('description__job-criteria-list')
+                    break
+                except:
+                    sleep(1)
+                    check_count += 1
+            criterias = criteria_list.find_elements_by_tag_name('li')
+            level = 'N/A'
+            job_length = 'N/A'
+            #print(criterias)
+            if check_count < 3:
+                sleep(1)
+                for criteria in criterias:
+                    for j in range(3):
+                        try:
+                            #print(criteria.find_element_by_class_name('description__job-criteria-subheader').get_attribute('innerHTML'))
+                            if 'Seniority level' in criteria.find_element_by_class_name('description__job-criteria-subheader').get_attribute('innerHTML'):
+                                level = criteria.find_element_by_class_name('description__job-criteria-text').get_attribute('innerHTML')
+                            if 'Employment type' in criteria.find_element_by_class_name('description__job-criteria-subheader').get_attribute('innerHTML'):
+                                job_length = criteria.find_element_by_class_name('description__job-criteria-text').get_attribute('innerHTML')
+                        except:
+                            pass
+            print(level)
+            print(job_length)
 
-        job_posting_to_add = {
-            "_id": id,
-            "title": title,
-            "location": location,
-            "desc": desc,
-            "num_applicants": num_applicants,
-            "company": company,
-            "level": level,
-            "job_length": job_length
+            job_posting_to_add = {
+                "_id": id,
+                "title": title,
+                "location": location,
+                "desc": desc,
+                "num_applicants": num_applicants,
+                "company": company,
+                "level": level,
+                "job_length": job_length
 
-        }
+            }
 
-        try:
-            job_postings_table.insert_one(job_posting_to_add)
-        except:
-            job_postings_table.update_one({'_id': id}, {'$set': {"title": title,
-            "location": location,
-            "desc": desc,
-            "num_applicants": num_applicants,
-            "company": company,
-            "level": level,
-            "job_length": job_length}})
+            try:
+                job_postings_table.insert_one(job_posting_to_add)
+            except:
+                job_postings_table.update_one({'_id': id}, {'$set': {"title": title,
+                "location": location,
+                "desc": desc,
+                "num_applicants": num_applicants,
+                "company": company,
+                "level": level,
+                "job_length": job_length}})
 
-        writer.writerow([title, location, desc, num_applicants, company, level, job_length])
-    driver.quit()
+            writer.writerow([title, location, desc, num_applicants, company, level, job_length])
+        sleep(10)
+        driver.quit()
 
 
 def filteredScrape(writer, base_url):
     print(base_url)
     for i in range(1, 6):
-        driver = webdriver.Chrome(executable_path=chrome_path)
-        driver.get(base_url + '&f_E=' + str(i))
-        getJobsFromSearch(writer, driver, True)
-        driver.quit()
+        getJobsFromSearch(writer, base_url + '&f_E=' + str(i), True)
         sleep(3)
 
 
@@ -225,7 +242,7 @@ def openAndGrabLinkedInJobs(writer, cityAndState):
     sleep(1)
     # action = ActionChains(driver)
 
-    getJobsFromSearch(writer, driver.current_url + '&distance=0', False)
+    getJobsFromSearch(writer, driver.current_url, False)
 
     driver.quit()
     sleep(3)
@@ -244,8 +261,8 @@ all_cities = []
 
 #states = ["tx", "ga", "md", "va", "dc" ]
 #statesFullName = ['Texas', 'Georgia', 'Maryland', 'Virginia', 'District of Columbia']
-states = ["tx", "ga"]
-statesFullName = ['Texas', 'Georgia']
+states = ['ga']
+statesFullName = ['Georgia']
  
 
 i = 0; 
